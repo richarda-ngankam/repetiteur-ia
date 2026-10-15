@@ -1,0 +1,27 @@
+# secrets: ne jamais commiter
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.jks
+*.keystore
+
+# Laravel
+backend/vendor/
+backend/node_modules/
+
+# Flutter
+mobile/.dart_tool/
+mobile/build/
+mobile/android/local.properties
+mobile/android/key.properties
+
+# Python
+calc-service/.venv/
+__pycache__/
+
+# Systeme et editeur
+.vscode/
+.idea/
+Thumbs.db
