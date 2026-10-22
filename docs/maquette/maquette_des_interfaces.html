@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1B2F4B">
+<title>Répétiteur IA — Maquette interactive</title>
+<style>
+/* =========================================================
+   RÉPÉTITEUR IA — FEUILLE DE STYLE
+   Couleurs et dimensions principales facilement modifiables
+   ========================================================= */
+:root {
+  --navy: #1B2F4B;
+  --navy-light: #294664;
+  --teal: #0E7C86;
+  --teal-dark: #08666e;
+  --teal-light: #e4f5f4;
+  --bg: #f3f6fa;
+  --surface: #ffffff;
+  --text: #203047;
+  --muted: #66768a;
+  --border: #e1e7ef;
+  --orange: #ef9b38;
+  --red: #c44747;
+  --green: #247c55;
+  --radius: 17px;
+  --shadow: 0 18px 60px rgba(20, 42, 67, .14);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: var(--text);
+  background: #e9eef5;
+  font-size: 14px;
+  line-height: 1.5;
+}
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid #6ac5c7;
+  outline-offset: 2px;
+}
+button:disabled { opacity: .5; cursor: not-allowed; }
+.top-notice {
+  padding: 10px 16px;
+  text-align: center;
+  background: var(--navy);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.top-notice span { color: #80e2dd; }
+.demo-header {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 22px 15px;
+}
+.brand-line { display: flex; align-items: center; gap: 12px; }
+.brand-logo {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 15px;
+  color: white;
+  background: var(--teal);
+  font-size: 24px;
+}
+.brand-line h1 { margin: 0; font-size: 23px; color: var(--navy); }
+.brand-line p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.presentation-title {
+  margin: 24px 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--navy);
+}
+.presentation-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.presentation-tab {
+  border: 1px solid #d4deea;
+  color: #34465c;
+  background: white;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: .2s;
+}
+.presentation-tab:hover { border-color: var(--teal); color: var(--teal); }
+.presentation-tab.active {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+.workspace {
+  display: flex;
+  justify-content: center;
+  padding: 20px 16px 42px;
+}
+.phone {
+  width: 390px;
+  max-width: 100%;
+  height: 800px;
+  max-height: calc(100dvh - 20px);
+  min-height: 550px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  border: 7px solid #16263a;
+  border-radius: 35px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+.status-bar {
+  height: 27px;
+  flex-shrink: 0;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 17px;
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 800;
+}
+.status-right { display: flex; gap: 5px; align-items: center; }
+.app-header {
+  flex-shrink: 0;
+  background: white;
+  padding: 11px 17px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.app-header-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.app-brand { display: flex; align-items: center; gap: 9px; }
+.app-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: var(--teal-light);
+  font-size: 19px;
+}
+.app-brand strong { display: block; color: var(--navy); font-size: 15px; }
+.app-brand small { display: block; font-size: 10px; color: var(--muted); }
+.icon-btn {
+  border: 1px solid var(--border);
+  background: white;
+  width: 37px;
+  height: 37px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  position: relative;
+  color: var(--navy);
+}
+.notification-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e85c5c;
+  border: 1px solid white;
+}
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 17px 15px 22px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #ccd7e4 transparent;
+}
+.content::-webkit-scrollbar { width: 4px; }
+.content::-webkit-scrollbar-thumb { background: #ccd7e4; border-radius: 5px; }
+.bottom-nav {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 7px 4px calc(7px + env(safe-area-inset-bottom));
+  background: white;
+  border-top: 1px solid var(--border);
+}
+.nav-item {
+  border: 0;
+  background: transparent;
+  color: #738197;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 46px;
+  border-radius: 10px;
+}
+.nav-item .nav-icon { font-size: 19px; line-height: 1.2; }
+.nav-item.active { color: var(--teal); background: #eef8f7; }
+h2 { margin: 0 0 7px; font-size: 21px; line-height: 1.25; color: var(--navy); }
+h3 { margin: 0 0 6px; font-size: 15px; color: var(--navy); }
+p { margin: 5px 0 10px; }
+.muted { color: var(--muted); }
+.small { font-size: 11px; }
+.tiny { font-size: 10px; }
+.eyebrow {
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  font-weight: 800;
+  font-size: 10px;
+}
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.card.soft { background: #f7fafc; }
+.card.teal { background: var(--teal-light); border-color: #cbeae7; }
+.card.dark { background: var(--navy); color: white; border-color: var(--navy); }
+.card.dark h3, .card.dark h2 { color: white; }
+.row { display: flex; align-items: center; gap: 10px; }
+.row.between { justify-content: space-between; }
+.row.top { align-items: flex-start; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 11px 13px;
+  font-weight: 800;
+  font-size: 12px;
+  text-align: center;
+  text-decoration: none;
+  transition: background .15s, transform .15s;
+}
+.btn:active { transform: scale(.98); }
+.btn.primary { background: var(--teal); color: white; }
+.btn.primary:hover { background: var(--teal-dark); }
+.btn.dark { background: var(--navy); color: white; }
+.btn.secondary { background: #edf2f7; color: var(--navy); border-color: #dce4ed; }
+.btn.outline { background: white; color: var(--teal); border-color: #a9d7d5; }
+.btn.danger { background: #fff0f0; color: var(--red); border-color: #f3d1d1; }
+.btn.white { background: white; color: var(--navy); }
+.btn.full { width: 100%; }
+.btn.small-btn { padding: 7px 10px; font-size: 11px; }
+.btn-group { display: flex; flex-wrap: wrap; gap: 7px; }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 30px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  background: #edf2f7;
+  color: #53657b;
+}
+.pill.green { color: #176542; background: #e4f5ea; }
+.pill.orange { color: #925313; background: #fff1dc; }
+.pill.red { color: #a52e2e; background: #fdeaea; }
+.pill.teal { color: var(--teal); background: var(--teal-light); }
+.progress { height: 7px; background: #e7edf4; border-radius: 10px; overflow: hidden; }
+.progress > span { display: block; height: 100%; border-radius: 10px; background: var(--teal); transition: width .3s; }
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 45px;
+  height: 45px;
+  border-radius: 15px;
+  background: #dff1ef;
+  font-size: 23px;
+  flex-shrink: 0;
+}
+.avatar.navy { background: #e6ecf5; }
+.metric { font-size: 23px; font-weight: 900; color: var(--navy); line-height: 1.2; }
+.metric-label { font-size: 10px; color: var(--muted); margin-top: 4px; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; margin: 19px 0 10px; gap: 8px; }
+.section-heading h3 { margin: 0; }
+.text-link { border: 0; background: transparent; color: var(--teal); font-weight: 800; font-size: 11px; padding: 5px 0; }
+input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea {
+  display: block;
+  width: 100%;
+  border: 1px solid #d7e0e9;
+  border-radius: 11px;
+  background: white;
+  padding: 11px;
+  color: var(--text);
+  min-height: 42px;
+}
+textarea { resize: vertical; min-height: 65px; }
+label.field-label { display: block; margin: 12px 0 5px; color: #45566c; font-weight: 800; font-size: 11px; }
+.field-hint { color: var(--muted); font-size: 10px; margin-top: 4px; }
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+}
+.option.selected { border-color: var(--teal); background: #eef9f8; }
+.option input { margin-top: 4px; accent-color: var(--teal); }
+.option strong { display: block; font-size: 12px; }
+.option small { display: block; color: var(--muted); font-size: 10px; margin-top: 2px; }
+.choice-tile {
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 13px;
+  padding: 11px 6px;
+  text-align: center;
+  color: var(--navy);
+  font-weight: 800;
+  font-size: 11px;
+}
+.choice-tile.selected { border: 2px solid var(--teal); background: #eef9f8; padding: 10px 5px; }
+.choice-tile span { display: block; font-size: 22px; margin-bottom: 4px; }
+.divider { height: 1px; background: var(--border); margin: 13px 0; }
+.chat-bubble {
+  padding: 11px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  margin: 9px 0;
+  max-width: 94%;
+  overflow-wrap: anywhere;
+}
+.chat-bubble.ai { background: white; border: 1px solid var(--border); border-top-left-radius: 4px; }
+.chat-bubble.user { background: var(--navy); color: white; margin-left: auto; border-top-right-radius: 4px; }
+.chat-bubble.system { background: #fff7e8; border: 1px solid #f4dfba; color: #77501c; max-width: 100%; }
+.chat-label { font-size: 10px; font-weight: 800; color: var(--teal); margin-bottom: 4px; }
+.math-box { padding: 13px; text-align: center; border-radius: 12px; background: #f0f5fa; font-size: 19px; font-weight: 900; color: var(--navy); margin: 10px 0; }
+.timer { font-size: 29px; font-weight: 900; font-variant-numeric: tabular-nums; color: var(--navy); }
+.timer.running { color: var(--teal); }
+.timer.ended { color: var(--red); }
+.book-cover {
+  min-height: 95px; border-radius: 12px; background: #e5eef8;
+  display: grid; place-items: center; font-size: 31px;
+}
+.list-row { display: flex; gap: 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid #edf0f4; }
+.list-row:last-child { border-bottom: 0; }
+.list-icon { width: 38px; height: 38px; border-radius: 11px; background: #edf3f8; display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+.list-main { flex: 1; min-width: 0; }
+.list-main strong { display: block; font-size: 12px; }
+.list-main small { display: block; font-size: 10px; color: var(--muted); }
+.switch-line { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 0; }
+.switch-line strong { display: block; font-size: 12px; }
+.switch-line small { display: block; font-size: 10px; color: var(--muted); }
+.switch { position: relative; width: 43px; height: 25px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; inset: 0; border-radius: 30px; background: #c9d2dd; transition: .2s; cursor: pointer;
+}
+.slider:before {
+  content: ""; position: absolute; width: 19px; height: 19px; left: 3px; top: 3px;
+  border-radius: 50%; background: white; transition: .2s; box-shadow: 0 1px 3px #0002;
+}
+.switch input:checked + .slider { background: var(--teal); }
+.switch input:checked + .slider:before { transform: translateX(18px); }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.day { text-align: center; font-size: 10px; color: var(--muted); }
+.day b { margin: 5px auto 0; display: grid; place-items: center; width: 29px; height: 29px; border-radius: 50%; background: #edf1f6; color: var(--navy); font-size: 11px; }
+.day.done b { background: #d9f0e2; color: #247c55; }
+.day.today b { background: var(--teal); color: white; }
+.toast {
+  position: absolute; z-index: 20; bottom: 76px; left: 12px; right: 12px;
+  background: var(--navy); color: white; padding: 12px 14px; border-radius: 12px;
+  box-shadow: 0 5px 22px #0002; font-size: 12px; font-weight: 700;
+  animation: appear .2s ease-out;
+}
+@keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.modal-backdrop {
+  position: absolute; inset: 0; z-index: 30; background: #10243dcc;
+  display: flex; align-items: center; justify-content: center; padding: 18px;
+}
+.modal {
+  width: 100%; max-height: 85%; overflow-y: auto; border-radius: 20px;
+  background: white; padding: 20px; box-shadow: 0 15px 50px #0003;
+}
+.modal h2 { font-size: 20px; }
+.exam-question { padding: 12px; background: white; border: 1px solid var(--border); border-radius: 12px; margin: 10px 0; }
+.exam-question label { display: flex; align-items: flex-start; gap: 7px; padding: 5px 0; font-size: 12px; }
+.exam-question input { accent-color: var(--teal); margin-top: 3px; }
+.empty-state { padding: 20px; text-align: center; color: var(--muted); }
+.mini-note { font-size: 10px; color: var(--muted); }
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.hidden { display: none !important; }
+.footer-note { text-align: center; font-size: 10px; color: var(--muted); padding: 6px; }
+@media (max-width: 540px) {
+  body { background: var(--bg); }
+  .top-notice { font-size: 11px; padding: 8px 10px; }
+  .demo-header { padding: 14px 13px 9px; }
+  .brand-line h1 { font-size: 19px; }
+  .brand-line p { font-size: 11px; }
+  .presentation-title { margin-top: 16px; }
+  .presentation-tabs { gap: 6px; }
+  .presentation-tab { padding: 8px 9px; font-size: 11px; }
+  .workspace { padding: 0; }
+  .phone {
+    width: 100%; height: calc(100dvh - 0px); max-height: none; min-height: 0;
+    border: 0; border-radius: 0; box-shadow: none;
+  }
+  .status-bar { height: 25px; }
+  .content { padding-bottom: 18px; }
+}
+@media (max-width: 360px) {
+  .grid2 { gap: 7px; }
+  .card { padding: 11px; }
+  .nav-item { font-size: 9px; }
+}
+@media (min-width: 541px) {
+  .phone { height: 800px; max-height: none; }
+}
+</style>
+</head>
+<body>
+<div class="top-notice">⚠️ <span>Maquette non fonctionnelle, données fictives</span> — Aucune donnée ni aucun paiement réel</div>
+
+<header class="demo-header">
+  <div class="brand-line">
+    <div class="brand-logo">✦</div>
+    <div>
+      <h1>Répétiteur IA</h1>
+      <p>Maquette interactive · Apprendre, comprendre, progresser.</p>
+    </div>
+  </div>
+  <div class="presentation-title">Explorer les écrans de la maquette</div>
+  <div class="presentation-tabs" id="presentationTabs"></div>
+</header>
+
+<main class="workspace">
+  <section class="phone" aria-label="Aperçu interactif de l'application mobile">
+    <div class="status-bar">
+      <span id="statusTime">09:41</span>
+      <span class="status-right"><span>▮▮▮</span><span>◉</span><span>▰</span></span>
+    </div>
+    <header class="app-header">
+      <div class="app-header-row">
+        <div class="app-brand">
+          <div class="app-mark">✦</div>
+          <div>
+            <strong>Répétiteur IA</strong>
+            <small id="headerSubtitle">Ton coach scolaire</small>
+          </div>
+        </div>
+        <button class="icon-btn" id="headerNotification" aria-label="Ouvrir les notifications" title="Notifications">♧<span class="notification-dot"></span></button>
+      </div>
+    </header>
+    <div class="content" id="screenContent"></div>
+    <nav class="bottom-nav" aria-label="Navigation principale">
+      <button class="nav-item active" data-screen="home"><span class="nav-icon">⌂</span><span>Accueil</span></button>
+      <button class="nav-item" data-screen="session"><span class="nav-icon">✎</span><span>Séance</span></button>
+      <button class="nav-item" data-screen="search"><span class="nav-icon">⌕</span><span>Recherche</span></button>
+      <button class="nav-item" data-screen="exams"><span class="nav-icon">▤</span><span>Examens</span></button>
+      <button class="nav-item" data-screen="profile"><span class="nav-icon">◎</span><span>Profil</span></button>
+    </nav>
+    <div id="toastContainer" aria-live="polite"></div>
+    <div id="modalContainer"></div>
+  </section>
+</main>
+
+<script>
+/* =========================================================
+   RÉPÉTITEUR IA — JAVASCRIPT
+   Navigation, données fictives et interactions de démonstration.
+   Les fonctionnalités ci-dessous ne contactent aucun serveur.
+   ========================================================= */
+
+// ---------- Configuration des écrans ----------
+const screens = {
+  onboarding: "Inscription et comptes",
+  home: "Accueil",
+  session: "Séance avec l'IA",
+  search: "Recherche et import",
+  exams: "Examens et calendrier",
+  reports: "Bilans",
+  plans: "Forfaits et paiement",
+  parent: "Espace parent",
+  profile: "Profil, hors-ligne et notifications"
+};
+
+const mainScreens = ["home", "session", "search", "exams", "profile"];
+let currentScreen = "home";
+let previousScreen = "home";
+
+// ---------- État de démonstration ----------
+const state = {
+  age: 15,
+  country: "Cameroun",
+  system: "Francophone",
+  grade: "3ème",
+  series: "Générale",
+  studentName: "Aïcha",
+  studentPin: "2580",
+  selectedProfile: "Aïcha",
+  accountStep: 1,
+  parentConfirmed: false,
+  mode: "guide",
+  hintLevel: 0,
+  sessionSeconds: 0,
+  focusSeconds: 0,
+  focusRunning: false,
+  focusEnded: false,
+  focusDeadline: null,
+  focusDuration: 60,
+  sessionStarted: false,
+  sessionMessages: [],
+  sessionStatus: "Vérifié par un enseignant",
+  reportText: "",
+  distressDemo: false,
+  selectedPlan: "week",
+  selectedPayment: "mtn",
+  customSubjects: ["Mathématiques"],
+  customHours: 5,
+  promoCode: "",
+  prepaidCode: "",
+  paymentConfirmed: false,
+  examRunning: false,
+  examEnded: false,
+  examSeconds: 0,
+  examDeadline: null,
+  examAnswers: {},
+  examSubmitted: false,
+  examDuration: 300,
+  economyMode: false,
+  downloads: ["Mathématiques · Pythagore", "Français · Les figures de style"],
+  downloaded: {},
+  view: "student",
+  dailyLimit: 120,
+  blockedHours: true,
+  deviceLimit: 2,
+  purchaseApproval: true,
+  conversationAccess: true,
+  followRole: true,
+  payerRole: true,
+  notifications: true,
+  customCountry: "Cameroun",
+  query: "",
+  searchType: "Tout",
+  importedName: "",
+  importedKind: "Photo",
+  selectedSubject: "Mathématiques",
+  profileMenu: false,
+  renewal: true,
+  timerExpiredPrompt: false,
+  reportSent: false,
+  toastTimer: null
+};
+
+const plans = {
+  hour: { name: "À l'heure", price: 300, duration: "1 heure", minutes: 60 },
+  day: { name: "À la journée", price: 700, duration: "1 jour", minutes: 180 },
+  week: { name: "À la semaine", price: 2500, duration: "7 jours", minutes: 900 },
+  month: { name: "Au mois", price: 7500, duration: "30 jours", minutes: 3600 },
+  subject: { name: "Par matière", price: 1500, duration: "7 jours · 1 matière", minutes: 450 },
+  exam: { name: "Jusqu'à l'examen", price: 5000, duration: "30 jours", minutes: 1800 }
+};
+
+let remainingMinutes = 375;
+let sessionInterval = null;
+let focusInterval = null;
+let examInterval = null;
+let toastTimeout = null;
+
+// ---------- Outils d'affichage ----------
+const $ = selector => document.querySelector(selector);
+const $$ = selector => [...document.querySelectorAll(selector)];
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[c]);
+}
+function money(value) {
+  return Math.round(value).toLocaleString("fr-FR") + " FCFA";
+}
+function formatTime(totalSeconds) {
+  const seconds = Math.max(0, Math.floor(totalSeconds));
+  return String(Math.floor(seconds / 60)).padStart(2, "0") + ":" +
+    String(seconds % 60).padStart(2, "0");
+}
+function toast(message) {
+  const host = $("#toastContainer");
+  host.innerHTML = `<div class="toast" role="status">${escapeHTML(message)}</div>`;
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => host.innerHTML = "", 3000);
+}
+function openModal(title, body, actions = "") {
+  $("#modalContainer").innerHTML = `
+    <div class="modal-backdrop" id="modalBackdrop">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="${escapeHTML(title)}">
+        <div class="row between" style="margin-bottom:12px">
+          <h2>${escapeHTML(title)}</h2>
+          <button class="icon-btn" onclick="closeModal()" aria-label="Fermer">✕</button>
+        </div>
+        ${body}
+        ${actions ? `<div class="btn-group" style="margin-top:15px">${actions}</div>` : ""}
+      </div>
+    </div>`;
+  $("#modalBackdrop").addEventListener("click", e => {
+    if (e.target.id === "modalBackdrop") closeModal();
+  });
+}
+function closeModal() {
+  $("#modalContainer").innerHTML = "";
+}
+function go(screen) {
+  if (!screens[screen]) return;
+  if (currentScreen !== screen) previousScreen = currentScreen;
+  currentScreen = screen;
+  render();
+}
+function navigate(screen) {
+  go(screen);
+}
+function updatePresentationTabs() {
+  $("#presentationTabs").innerHTML = Object.entries(screens).map(([key, title]) =>
+    `<button class="presentation-tab ${currentScreen === key ? "active" : ""}" data-presentation="${key}">${escapeHTML(title)}</button>`
+  ).join("");
+}
+function updateNav() {
+  $$(".nav-item").forEach(button => {
+    const key = button.dataset.screen;
+    button.classList.toggle("active", currentScreen === key ||
+      (["reports", "plans", "parent"].includes(currentScreen) && key === "profile"));
+  });
+}
+function render() {
+  updatePresentationTabs();
+  updateNav();
+  $("#headerSubtitle").textContent = currentScreen === "parent" ? "Espace famille" :
+    currentScreen === "session" ? "Apprendre à ton rythme" : "Ton coach scolaire";
+  const renderers = {
+    onboarding: renderOnboarding,
+    home: renderHome,
+    session: renderSession,
+    search: renderSearch,
+    exams: renderExams,
+    reports: renderReports,
+    plans: renderPlans,
+    parent: renderParent,
+    profile: renderProfile
+  };
+  $("#screenContent").innerHTML = renderers[currentScreen]();
+  $("#screenContent").scrollTop = 0;
+  updateNav();
+  if (currentScreen === "session") updateTimerDisplay();
+  if (currentScreen === "exams") updateExamDisplay();
+}
+function toggleSwitch(label, checked, action, description = "") {
+  return `<div class="switch-line">
+    <div><strong>${label}</strong>${description ? `<small>${description}</small>` : ""}</div>
+    <label class="switch" aria-label="${label}">
+      <input type="checkbox" ${checked ? "checked" : ""} onchange="${action}(this.checked)">
+      <span class="slider"></span>
+    </label>
+  </div>`;
+}
+function section(title, actionLabel = "", action = "") {
+  return `<div class="section-heading"><h3>${title}</h3>${actionLabel ? `<button class="text-link" onclick="${action}">${actionLabel}</button>` : ""}</div>`;
+}
+function cardLink(icon, title, description, screen, tag = "") {
+  return `<button class="option" style="width:100%;text-align:left" onclick="go('${screen}')">
+    <span class="list-icon">${icon}</span>
+    <span style="flex:1"><strong>${title}</strong><small>${description}</small></span>
+    ${tag ? `<span class="pill teal">${tag}</span>` : "›"}
+  </button>`;
+}
+
+// ---------- Écran 1 : inscription et comptes ----------
+function renderOnboarding() {
+  const ageGroup = state.age <= 12 ? "child" : state.age <= 17 ? "teen" : "adult";
+  let path = "";
+  if (ageGroup === "child") {
+    path = `<div class="card teal">
+      <div class="row"><span class="avatar">👨‍👩‍👧</span><div><h3>Un parent crée le compte</h3><p class="small">Le parent est responsable du compte et des achats.</p></div></div>
+      <div class="divider"></div>
+      <div class="row"><span class="avatar">🔐</span><div><h3>L'enfant se connecte avec un PIN</h3><p class="small">Un code à 4 chiffres protège son profil sur le téléphone partagé.</p></div></div>
+      <label class="field-label">PIN de démonstration</label>
+      <input id="childPin" inputmode="numeric" maxlength="4" value="${escapeHTML(state.studentPin)}">
+      <button class="btn primary full" style="margin-top:10px" onclick="checkChildPin()">Tester la connexion de l'enfant</button>
+    </div>`;
+  } else if (ageGroup === "teen") {
+    path = `<div class="card">
+      <div class="row"><span class="avatar">🧑🏽‍🎓</span><div><h3>Inscription de l'adolescent</h3><p class="small">L'élève crée son profil et poursuit son apprentissage.</p></div></div>
+      <label class="field-label">Adresse du parent (fictive)</label>
+      <input id="parentEmail" type="email" placeholder="parent@exemple.cm">
+      <button class="btn outline full" style="margin-top:10px" onclick="sendParentCode()">Envoyer un code au parent</button>
+      <div class="divider"></div>
+      <div class="row between"><span class="small">Confirmation du parent</span><span class="pill ${state.parentConfirmed ? "green" : "orange"}">${state.parentConfirmed ? "Confirmée" : "En attente"}</span></div>
+      <p class="small muted">${state.parentConfirmed ? "Le compte peut accéder au parcours de paiement fictif." : "Le paiement reste bloqué tant que le parent n'a pas confirmé."}</p>
+      <button class="btn ${state.parentConfirmed ? "secondary" : "primary"} full" onclick="confirmParentDemo()">${state.parentConfirmed ? "Confirmation enregistrée ✓" : "Simuler la confirmation du parent"}</button>
+      ${!state.parentConfirmed ? `<button class="btn secondary full" style="margin-top:8px" onclick="toast('Paiement bloqué : confirmation parent requise.')">Tester le blocage du paiement</button>` : ""}
+    </div>`;
+  } else {
+    path = `<div class="card teal">
+      <div class="row"><span class="avatar">🎓</span><div><h3>Inscription autonome</h3><p class="small">Tu gères ton compte, tes séances et tes paiements.</p></div></div>
+      <p class="small">Vérification de contact et sécurité du compte à configurer dans la version réelle.</p>
+    </div>`;
+  }
+  return `
+    <div class="eyebrow">Bienvenue · Première configuration</div>
+    <h2>Créons ton espace d'apprentissage.</h2>
+    <p class="muted">Un parcours adapté à l'âge de chaque apprenant.</p>
+    <div class="card">
+      <label class="field-label">Quel âge a l'apprenant ?</label>
+      <div class="grid3">
+        ${[10,15,19].map((age,i) => `<button class="choice-tile ${((state.age<=12&&i===0)||(state.age>=13&&state.age<=17&&i===1)||(state.age>=18&&i===2))?"selected":""}" onclick="setAge(${age})"><span>${["🧒","🧑🏽‍🎓","👩🏽‍💻"][i]}</span>${["9–12 ans","13–17 ans","18 ans et +"][i]}</button>`).join("")}
+      </div>
+      <label class="field-label">Âge exact</label>
+      <input type="number" min="9" max="30" value="${state.age}" onchange="setAge(this.value)">
+    </div>
+    ${path}
+    <div class="card">
+      <h3>Configuration scolaire</h3>
+      <label class="field-label">Pays</label>
+      <select onchange="state.country=this.value">
+        ${["Cameroun","Côte d'Ivoire","Sénégal","Bénin","Togo","Gabon","Congo","Tchad","Burkina Faso","Mali","Niger","Guinée","RDC","Madagascar","Autre"].map(x=>`<option ${state.country===x?"selected":""}>${x}</option>`).join("")}
+      </select>
+      <label class="field-label">Système éducatif</label>
+      <div class="grid2">
+        <button class="choice-tile ${state.system==="Francophone"?"selected":""}" onclick="state.system='Francophone';render()">🇫🇷 Francophone</button>
+        <button class="choice-tile ${state.system==="Anglophone"?"selected":""}" onclick="state.system='Anglophone';render()">🇬🇧 Anglophone</button>
+      </div>
+      <label class="field-label">Classe / niveau</label>
+      <select onchange="state.grade=this.value;render()">
+        ${["6ème","5ème","4ème","3ème","2nde","1ère","Terminale","Université L1","Université L2","Université L3","Master"].map(x=>`<option ${state.grade===x?"selected":""}>${x}</option>`).join("")}
+      </select>
+      <label class="field-label">Série ou filière</label>
+      <select onchange="state.series=this.value">
+        ${["Générale","A","C","D","TI","Technique","Littéraire","Scientifique","Informatique","Gestion","Autre"].map(x=>`<option ${state.series===x?"selected":""}>${x}</option>`).join("")}
+      </select>
+      <label class="field-label">Nom du profil</label>
+      <input value="${escapeHTML(state.studentName)}" onchange="state.studentName=this.value" placeholder="Prénom de l'élève">
+      <button class="btn primary full" style="margin-top:14px" onclick="saveOnboarding()">Enregistrer le profil fictif →</button>
+    </div>
+    <div class="card">
+      <h3>📱 Téléphone partagé</h3>
+      <p class="small muted">Choisir un profil avant d'accéder aux cours.</p>
+      <div class="option selected"><span class="avatar">👧🏽</span><div style="flex:1"><strong>${escapeHTML(state.studentName)}</strong><small>${state.age} ans · ${escapeHTML(state.grade)}</small></div><button class="btn outline small-btn" onclick="openProfilePin()">PIN</button></div>
+      <div class="option" style="margin-top:8px"><span class="avatar">👩🏽</span><div style="flex:1"><strong>Maman</strong><small>Profil parent fictif</small></div><button class="btn secondary small-btn" onclick="go('parent')">Ouvrir</button></div>
+    </div>`;
+}
+function setAge(value) {
+  const age = Number(value);
+  if (!Number.isFinite(age)) return;
+  state.age = Math.max(9, Math.min(30, age));
+  render();
+}
+function checkChildPin() {
+  const pin = $("#childPin")?.value || "";
+  if (pin === state.studentPin) toast("PIN correct : profil enfant ouvert (simulation).");
+  else toast("PIN incorrect. Réessaie avec le code fictif 2580.");
+}
+function sendParentCode() {
+  const email = $("#parentEmail")?.value.trim();
+  if (!email || !email.includes("@")) return toast("Saisis une adresse parent fictive valide.");
+  toast("Code de démonstration envoyé à " + email + " (aucun message réel).");
+}
+function confirmParentDemo() {
+  state.parentConfirmed = true;
+  render();
+  toast("Confirmation parent fictive enregistrée.");
+}
+function saveOnboarding() {
+  if (state.age <= 12 && !state.studentPin) return toast("Configure d'abord le PIN du profil enfant.");
+  if (state.age >= 13 && state.age <= 17 && !state.parentConfirmed) {
+    toast("Compte créé en mode limité : confirmation parent requise.");
+  } else {
+    toast("Profil fictif enregistré.");
+  }
+  go("home");
+}
+function openProfilePin() {
+  openModal("Sélectionner un profil", `
+    <p class="muted small">Saisis le PIN du profil de démonstration.</p>
+    <input id="modalPin" type="password" inputmode="numeric" maxlength="4" placeholder="Code PIN à 4 chiffres">
+    <p class="mini-note">PIN de test : 2580</p>
+  `, `<button class="btn primary full" onclick="verifyModalPin()">Déverrouiller</button>`);
+}
+function verifyModalPin() {
+  if ($("#modalPin")?.value === state.studentPin) {
+    closeModal(); toast("Profil de " + state.studentName + " sélectionné.");
+  } else toast("PIN incorrect.");
+}
+
+// ---------- Écran 2 : accueil ----------
+function renderHome() {
+  const progress = Math.min(100, Math.round((3/5)*100));
+  return `
+    <div class="row between top">
+      <div><div class="eyebrow">Mercredi · Ta journée commence</div><h2>Salut ${escapeHTML(state.studentName)} 👋🏽</h2><p class="muted small">${escapeHTML(state.grade)} · ${escapeHTML(state.series)} · ${escapeHTML(state.country)}</p></div>
+      <button class="icon-btn" onclick="go('profile')" aria-label="Notifications">🔔</button>
+    </div>
+    <div class="card dark" style="margin-top:13px">
+      <div class="row between"><span class="pill" style="background:#ffffff20;color:white">✦ Ton coach IA</span><span class="small">Mode guide</span></div>
+      <h2 style="margin-top:14px">Chaque progrès compte.</h2>
+      <p style="color:#e2eaf4;font-size:12px">Reprends là où tu t'es arrêtée et avance étape par étape.</p>
+      <button class="btn white full" onclick="go('session')">▶ Continuer ma séance</button>
+    </div>
+    <div class="grid2">
+      <div class="card" style="margin:0"><div class="row"><span>⏳</span><span class="small muted">Forfait restant</span></div><div class="metric" style="margin-top:9px">${Math.floor(remainingMinutes/60)} h ${remainingMinutes%60} min</div><div class="progress" style="margin-top:10px"><span style="width:${Math.min(100,remainingMinutes/900*100)}%"></span></div><button class="text-link" onclick="go('plans')">Gérer mon forfait →</button></div>
+      <div class="card" style="margin:0"><div class="row"><span>🎯</span><span class="small muted">Objectif semaine</span></div><div class="metric" style="margin-top:9px">3 / 5</div><p class="small muted">séances terminées</p><div class="progress"><span style="width:${progress}%"></span></div></div>
+    </div>
+    ${section("Ma régularité")}
+    <div class="card"><div class="days">${["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"].map((d,i)=>`<div class="day ${i<2?"done":i===2?"today":""}">${d}<b>${i<2?"✓":i===2?"•":i+19}</b></div>`).join("")}</div><p class="small muted" style="margin-top:12px">🔥 2 jours de suite : continue comme ça !</p></div>
+    ${section("À ne pas oublier")}
+    <div class="card">
+      <div class="row"><div class="avatar">📐</div><div style="flex:1"><span class="pill orange">Dans 3 jours</span><h3 style="margin-top:6px">DS de maths</h3><p class="small muted">Théorème de Pythagore · 3ème</p></div></div>
+      <button class="btn outline full" style="margin-top:10px" onclick="go('exams')">Préparer mon évaluation</button>
+    </div>
+    ${section("Accès rapide")}
+    <div class="stack">
+      ${cardLink("📊","Mes bilans","Voir mes scores et mes points à travailler","reports")}
+      ${cardLink("👨‍👩‍👧","Espace parent","Suivi, horaires et contrôles","parent")}
+      ${cardLink("🔔","Notifications","Rappels et alertes du compte","profile")}
+    </div>
+    <p class="footer-note">Données fictives · Les résultats affichés sont des exemples.</p>`;
+}
+
+// ---------- Écran 3 : séance guidée ----------
+function defaultSessionMessages() {
+  return [
+    {type:"ai", text:"Bonjour Aïcha ! Aujourd'hui, nous allons comprendre le théorème de Pythagore. 😊"},
+    {type:"ai", text:"Dans un triangle rectangle, le carré de la longueur de l'hypoténuse est égal à la somme des carrés des deux autres côtés."},
+    {type:"formula", text:"c² = a² + b²"},
+    {type:"ai", text:"Imagine un triangle ABC rectangle en A. AB = 3 cm et AC = 4 cm. Le côté BC est l'hypoténuse. Comment trouver sa longueur ?"},
+    {type:"exercise", text:"Exercice : calcule BC. Choisis ta réponse ou demande-moi un indice."}
+  ];
+}
+function renderSession() {
+  if (!state.sessionMessages.length) state.sessionMessages = defaultSessionMessages();
+  const messages = state.sessionMessages.map(m => {
+    if (m.type === "formula") return `<div class="math-box">${escapeHTML(m.text)}</div>`;
+    if (m.type === "user") return `<div class="chat-bubble user">${escapeHTML(m.text)}</div>`;
+    if (m.type === "system") return `<div class="chat-bubble system">${escapeHTML(m.text)}</div>`;
+    if (m.type === "exercise") return `<div class="chat-bubble ai"><div class="chat-label">✏️ À toi de jouer</div>${escapeHTML(m.text)}</div>`;
+    return `<div class="chat-bubble ai"><div class="chat-label">✦ Répétiteur IA</div>${escapeHTML(m.text)}</div>`;
+  }).join("");
+  let hint = "";
+  if (state.hintLevel === 1) hint = `<div class="chat-bubble ai"><div class="chat-label">💡 Indice 1</div>Repère d'abord l'hypoténuse : c'est le côté opposé à l'angle droit. Ici, c'est BC.</div>`;
+  if (state.hintLevel === 2) hint = `<div class="chat-bubble ai"><div class="chat-label">💡 Indice 2</div>Remplace les longueurs dans la formule : BC² = 3² + 4² = 9 + 16. Il reste à calculer la racine carrée de 25.</div>`;
+  if (state.hintLevel >= 3) hint = `<div class="chat-bubble ai"><div class="chat-label">✅ Solution complète</div>BC² = 3² + 4² = 9 + 16 = 25. Donc BC = √25 = <strong>5 cm</strong>. Bravo ! Vérifie toujours les unités et l'angle droit.</div>`;
+  return `
+    <div class="row between"><div><div class="eyebrow">Mathématiques · 3ème</div><h2>Théorème de Pythagore</h2></div><span class="pill green">● En cours</span></div>
+    <div class="row between" style="margin:10px 0">
+      <span class="pill">${state.mode==="guide"?"🧭 Mode guide":"📖 Mode solution"}</span>
+      <button class="btn secondary small-btn" onclick="toggleSessionMode()">${state.mode==="guide"?"Passer en mode solution":"Revenir au mode guide"}</button>
+    </div>
+    <div class="card" style="padding:10px 12px">
+      <div class="row between"><span class="small muted">Temps de séance</span><span class="timer" id="sessionClock">${formatTime(state.sessionSeconds)}</span></div>
+      <div class="row between" style="margin-top:5px"><span class="small muted">Contenu pédagogique</span><span class="pill ${state.sessionStatus==="Vérifié par un enseignant"?"green":"orange"}">${state.sessionStatus==="Vérifié par un enseignant"?"✓":"✦"} ${state.sessionStatus}</span></div>
+    </div>
+    <div id="chatHistory">${messages}${hint}</div>
+    <div class="card soft">
+      <h3>Ta réponse</h3>
+      <div class="grid3">
+        ${["4 cm","5 cm","7 cm"].map((answer,i)=>`<button class="choice-tile" onclick="answerExercise('${answer}')">${answer}</button>`).join("")}
+      </div>
+      <div class="btn-group" style="margin-top:10px">
+        <button class="btn primary" onclick="explainMore()">💡 Explique-moi</button>
+        <button class="btn secondary" onclick="startThinking()">⏱ Je réfléchis</button>
+      </div>
+      <div class="row between" style="margin-top:10px">
+        <span class="small muted">Indices utilisés : ${Math.min(state.hintLevel,3)}/3</span>
+        <button class="text-link" onclick="reportError()">⚑ Signaler une erreur</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Besoin de parler ?</h3>
+      <p class="small muted">Teste une réponse bienveillante en cas de détresse.</p>
+      <button class="btn outline full" onclick="distressDemo()">💙 Démonstration de soutien</button>
+    </div>
+    <div class="card">
+      <h3>Écrire à l'IA</h3>
+      <textarea id="sessionInput" placeholder="Ex. : Pourquoi utilise-t-on le carré ?"></textarea>
+      <button class="btn primary full" style="margin-top:8px" onclick="sendSessionMessage()">Envoyer (simulation)</button>
+    </div>`;
+}
+function ensureSessionClock() {
+  if (sessionInterval) return;
+  sessionInterval = setInterval(() => {
+    state.sessionSeconds++;
+    if (currentScreen === "session") {
+      const clock = $("#sessionClock");
+      if (clock) clock.textContent = formatTime(state.sessionSeconds);
+    }
+  }, 1000);
+}
+function updateTimerDisplay() {
+  const clock = $("#sessionClock");
+  if (clock) clock.textContent = formatTime(state.sessionSeconds);
+}
+function toggleSessionMode() {
+  state.mode = state.mode === "guide" ? "solution" : "guide";
+  render();
+  toast(state.mode === "guide" ? "Mode guide activé : cherche avant de voir la réponse." : "Mode solution activé.");
+}
+function explainMore() {
+  if (state.hintLevel < 3) state.hintLevel++;
+  else toast("Tu as déjà vu la solution complète.");
+  render();
+  const chat = $("#chatHistory");
+  if (chat) chat.scrollIntoView({block:"end",behavior:"smooth"});
+}
+function answerExercise(answer) {
+  state.sessionMessages.push({type:"user",text:"Je pense que la réponse est " + answer + "."});
+  if (answer === "5 cm") {
+    state.sessionMessages.push({type:"ai",text:"Exactement ! 🎉 3² + 4² = 25, et √25 = 5. Tu as trouvé la bonne réponse."});
+    state.hintLevel = Math.max(0,state.hintLevel);
+  } else {
+    state.sessionMessages.push({type:"ai",text:"Pas tout à fait, mais c'est une bonne tentative. Rappelle-toi : BC² = 3² + 4². Essaie de calculer 9 + 16 avant de prendre la racine carrée."});
+  }
+  render();
+}
+function sendSessionMessage() {
+  const input = $("#sessionInput");
+  const message = input?.value.trim();
+  if (!message) return toast("Écris d'abord une question.");
+  state.sessionMessages.push({type:"user",text:message});
+  state.sessionMessages.push({type:"ai",text:"Bonne question ! Dans cette maquette, je te conseille de revenir à la formule c² = a² + b² et de repérer les longueurs connues. Dans une vraie version, l'IA analyserait ta question."});
+  render();
+}
+function startThinking() {
+  if (state.focusRunning) return toast("Le minuteur de réflexion est déjà lancé.");
+  state.focusRunning = true;
+  state.focusEnded = false;
+  state.focusDeadline = Date.now() + state.focusDuration * 1000;
+  ensureSessionClock();
+  if (focusInterval) clearInterval(focusInterval);
+  focusInterval = setInterval(() => {
+    const remaining = Math.max(0,Math.ceil((state.focusDeadline-Date.now())/1000));
+    const timer = $("#focusClock");
+    if (timer) {
+      timer.textContent = formatTime(remaining);
+      timer.classList.toggle("ended",remaining===0);
+    }
+    if (remaining <= 0) {
+      clearInterval(focusInterval);
+      focusInterval = null;
+      state.focusRunning = false;
+      state.focusEnded = true;
+      state.timerExpiredPrompt = true;
+      if (currentScreen === "session") showFocusEndModal();
+    }
+  },250);
+  render();
+  toast("Minuteur de réflexion lancé !");
+}
+function showFocusEndModal() {
+  openModal("Temps écoulé ⏰", `
+    <p>Ton temps de réflexion est terminé. Prends une respiration, puis choisis la suite.</p>
+    <div class="card soft"><div class="timer ended" id="focusClock">${formatTime(0)}</div><p class="small muted">Tu peux répondre, prolonger ou demander de l'aide.</p></div>
+  `, `
+    <button class="btn primary" onclick="closeModal();answerAfterThinking()">Répondre</button>
+    <button class="btn secondary" onclick="closeModal();extendThinking()">Prolonger</button>
+    <button class="btn outline" onclick="closeModal();requestThinkingHelp()">Demander de l'aide</button>
+  `);
+}
+function answerAfterThinking() {
+  state.timerExpiredPrompt = false;
+  toast("Choisis une réponse dans l'exercice.");
+  render();
+}
+function extendThinking() {
+  state.focusDuration = 60;
+  state.timerExpiredPrompt = false;
+  startThinking();
+}
+function requestThinkingHelp() {
+  state.timerExpiredPrompt = false;
+  explainMore();
+}
+function distressDemo() {
+  state.distressDemo = true;
+  state.sessionMessages.push({type:"system",text:"Tu comptes, et tu mérites d'être écoutée. Je suis un outil d'apprentissage, pas un professionnel de santé. Si tu te sens en danger ou dépassée, parle dès que possible à un adulte de confiance : parent, enseignant ou conseiller scolaire. Si le danger est immédiat, demande de l'aide aux services d'urgence locaux."});
+  render();
+  openModal("Tu n'es pas seule 💙", `
+    <p>Merci de partager ce que tu ressens. Tu n'as pas besoin de tout résoudre seule.</p>
+    <div class="card teal"><h3>Ce que tu peux faire maintenant</h3><p class="small">• Parler à un parent ou à un adulte de confiance.</p><p class="small">• Rejoindre un endroit où tu te sens en sécurité.</p><p class="small">• Demander un accompagnement professionnel si tu en as besoin.</p></div>
+    <p class="small muted">Les coordonnées suivantes sont fictives pour la maquette et ne doivent pas être utilisées comme numéros réels d'aide.</p>
+    <div class="card"><p>☎️ Ligne d'écoute fictive : <strong>000 000 000</strong></p><p>🆘 Assistance fictive : <strong>111</strong></p></div>
+  `, `<button class="btn primary full" onclick="closeModal()">J'ai compris</button>`);
+}
+function reportError() {
+  openModal("Signaler une erreur", `
+    <p class="small muted">Indique ce qui semble incorrect. Ce signalement est fictif et ne sera pas transmis.</p>
+    <label class="field-label">Type d'erreur</label>
+    <select id="errorType"><option>Erreur de calcul</option><option>Explication peu claire</option><option>Erreur dans l'énoncé</option><option>Contenu inadapté</option><option>Autre</option></select>
+    <label class="field-label">Détails</label><textarea id="errorDetails" placeholder="Décris brièvement le problème"></textarea>
+  `, `<button class="btn primary full" onclick="submitErrorReport()">Envoyer le signalement fictif</button>`);
+}
+function submitErrorReport() {
+  const type = $("#errorType").value;
+  state.reportSent = true;
+  closeModal();
+  toast("Signalement fictif enregistré : " + type);
+}
+
+// ---------- Écran 4 : recherche et import ----------
+const searchData = [
+  {type:"Leçons",icon:"📘",title:"Théorème de Pythagore",desc:"Cours expliqué, formule et exemple corrigé",subject:"Mathématiques",level:"3ème"},
+  {type:"Exercices",icon:"✏️",title:"Triangles rectangles",desc:"8 exercices progressifs avec indices",subject:"Mathématiques",level:"3ème"},
+  {type:"Annales",icon:"📄",title:"BEPC blanc — Mathématiques",desc:"Sujet fictif · Session de démonstration",subject:"Mathématiques",level:"3ème"},
+  {type:"Fiches",icon:"🗂️",title:"Les identités remarquables",desc:"Résumé, méthodes et pièges fréquents",subject:"Mathématiques",level:"3ème"},
+  {type:"Leçons",icon:"📗",title:"Les figures de style",desc:"Définitions et exemples en contexte",subject:"Français",level:"3ème"},
+  {type:"Exercices",icon:"🧮",title:"Équations du premier degré",desc:"12 questions avec correction guidée",subject:"Mathématiques",level:"3ème"},
+  {type:"Annales",icon:"📑",title:"Épreuve de sciences — BEPC",desc:"Épreuve fictive d'entraînement",subject:"Sciences",level:"3ème"},
+  {type:"Fiches",icon:"📝",title:"Réviser la grammaire",desc:"Les règles essentielles en une page",subject:"Français",level:"3ème"}
+];
+function renderSearch() {
+  const query = state.query.trim().toLowerCase();
+  const filtered = searchData.filter(item =>
+    (state.searchType==="Tout" || item.type===state.searchType) &&
+    (!query || (item.title+" "+item.desc+" "+item.subject).toLowerCase().includes(query))
+  );
+  return `
+    <div class="eyebrow">Bibliothèque scolaire</div><h2>Que veux-tu apprendre ?</h2>
+    <p class="muted small">Cherche un cours, un exercice, une annale ou une fiche.</p>
+    <div class="row" style="margin:13px 0">
+      <input id="searchInput" value="${escapeHTML(state.query)}" placeholder="Ex. : Pythagore, équations…" oninput="state.query=this.value;renderSearchResults()">
+      <button class="icon-btn" onclick="simulateCamera()" aria-label="Photographier un exercice">📷</button>
+    </div>
+    <button class="btn outline full" onclick="simulateCamera()">📷 Photographier un exercice</button>
+    <div class="tag-row" style="margin-top:13px">
+      ${["Tout","Leçons","Exercices","Annales","Fiches"].map(type=>`<button class="btn ${state.searchType===type?"primary":"secondary"} small-btn" onclick="state.searchType='${type}';render()">${type}</button>`).join("")}
+    </div>
+    <div id="searchResults">${renderSearchResultsHTML(filtered)}</div>
+    <div class="card teal" style="margin-top:14px">
+      <div class="row"><span class="avatar">🧩</span><div><h3>Avant de commencer</h3><p class="small">Prérequis conseillé : reconnaître un triangle rectangle et calculer un carré.</p></div></div>
+    </div>
+    <div class="card">
+      <div class="row between"><div><h3>📚 Mon livre / Mes exercices</h3><p class="small muted">Importe un document ou une photo pour travailler dessus.</p></div></div>
+      <label class="field-label">Nom du document (simulation)</label>
+      <input id="importName" value="${escapeHTML(state.importedName)}" placeholder="Ex. : Exercice page 42">
+      <label class="field-label">Type de document</label>
+      <select id="importKind"><option ${state.importedKind==="Photo"?"selected":""}>Photo</option><option ${state.importedKind==="PDF"?"selected":""}>PDF</option><option ${state.importedKind==="Document"?"selected":""}>Document</option></select>
+      <label class="btn outline full" style="margin-top:9px;cursor:pointer">📎 Choisir un fichier local (simulation)<input type="file" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="handleImportFile(this)"></label>
+      <button class="btn primary full" style="margin-top:9px" onclick="simulateImport()">Importer dans mon espace privé</button>
+      <p class="small muted">🔒 Contenu privé. Les fichiers ne sont pas envoyés à un serveur dans cette maquette.</p>
+    </div>`;
+}
+function renderSearchResultsHTML(items) {
+  if (!items.length) return `<div class="empty-state">Aucun résultat. Essaie un autre mot-clé.</div>`;
+  return items.map(item=>`<div class="card" style="padding:12px">
+    <div class="row top"><div class="list-icon">${item.icon}</div><div style="flex:1"><div class="row between"><span class="pill teal">${item.type}</span><span class="tiny muted">${item.subject}</span></div><h3 style="margin-top:6px">${item.title}</h3><p class="small muted">${item.desc}</p><button class="text-link" onclick="openResource('${item.title.replace(/'/g,"\\'")}')">Ouvrir la ressource →</button></div></div>
+  </div>`).join("");
+}
+function renderSearchResults() {
+  const query = state.query.trim().toLowerCase();
+  const filtered = searchData.filter(item =>
+    (state.searchType==="Tout" || item.type===state.searchType) &&
+    (!query || (item.title+" "+item.desc+" "+item.subject).toLowerCase().includes(query))
+  );
+  const results = $("#searchResults");
+  if (results) results.innerHTML = renderSearchResultsHTML(filtered);
+}
+function openResource(title) {
+  openModal(title, `<div class="card teal"><p>Ressource fictive pour ${escapeHTML(state.grade)}.</p><p class="small">Le contenu pédagogique réel dépendra de la matière, du programme et du niveau sélectionnés.</p></div><p class="small muted">Prérequis conseillé : notions de base du chapitre précédent.</p>`, `<button class="btn primary full" onclick="closeModal();go('session')">Travailler avec l'IA</button>`);
+}
+function simulateCamera() {
+  openModal("Photographier un exercice", `
+    <div class="book-cover">📷</div>
+    <h3 style="margin-top:12px">Capture simulée</h3>
+    <p class="small muted">La caméra réelle n'est pas activée. Dans l'application finale, tu pourrais photographier un énoncé pour le lire et le travailler.</p>
+    <label class="field-label">Décris l'exercice photographié</label>
+    <textarea id="cameraDescription" placeholder="Ex. : Calculer l'hypoténuse d'un triangle..."></textarea>
+  `, `<button class="btn primary full" onclick="acceptCameraDemo()">Analyser l'exercice (simulation)</button>`);
+}
+function acceptCameraDemo() {
+  const description = $("#cameraDescription")?.value.trim();
+  state.query = description || "Pythagore";
+  closeModal();
+  render();
+  toast("Analyse fictive terminée. Les résultats sont des exemples.");
+}
+function handleImportFile(input) {
+  if (input.files?.length) {
+    state.importedName = input.files[0].name;
+    const nameInput = $("#importName");
+    if (nameInput) nameInput.value = state.importedName;
+    toast("Fichier sélectionné localement : " + state.importedName);
+  }
+}
+function simulateImport() {
+  state.importedName = $("#importName")?.value.trim() || "Document sans titre";
+  state.importedKind = $("#importKind")?.value || "Photo";
+  state.downloaded["import-" + state.importedName] = true;
+  toast("Document ajouté à la liste privée de démonstration.");
+  render();
+}
+
+// ---------- Écran 5 : examens et calendrier ----------
+function renderExams() {
+  const periods = [
+    ["Cours","📘","Apprendre les chapitres"],
+    ["Révisions","🔁","Revoir les notions essentielles"],
+    ["CC","📝","Contrôle continu"],
+    ["DS","📄","Devoir surveillé"],
+    ["Session normale","🎓","Évaluation de fin de période"],
+    ["Rattrapage","🔄","Seconde session"]
+  ];
+  return `
+    <div class="eyebrow">Préparer · S'entraîner · Réussir</div><h2>Examens & calendrier</h2>
+    <p class="muted small">Planifie tes révisions et suis tes progrès sans pression.</p>
+    <div class="card dark">
+      <div class="row between"><span class="pill" style="background:#ffffff20;color:white">Estimation indicative</span><span>📈</span></div>
+      <div class="metric" style="color:white;font-size:34px;margin-top:12px">13,5 / 20</div>
+      <p style="color:#e3eaf4;font-size:11px">Moyenne estimée à partir des exercices fictifs disponibles.</p>
+      <p class="tiny" style="color:#c7d7e9">Ce n'est pas une note officielle ni une prédiction garantie.</p>
+    </div>
+    ${section("Périodes scolaires")}
+    <div class="stack">${periods.map((p,i)=>`<button class="option" onclick="selectPeriod('${p[0]}')"><span class="list-icon">${p[1]}</span><span style="flex:1"><strong>${p[0]}</strong><small>${p[2]}</small></span>${i===3?'<span class="pill orange">Bientôt</span>':'›'}</button>`).join("")}</div>
+    ${section("Prochaines évaluations")}
+    <div class="card">
+      <div class="list-row"><div class="list-icon">📐</div><div class="list-main"><strong>DS de mathématiques</strong><small>Dans 3 jours · Pythagore</small></div><span class="pill orange">À préparer</span></div>
+      <div class="list-row"><div class="list-icon">📖</div><div class="list-main"><strong>Français</strong><small>Dans 7 jours · Figures de style</small></div><span class="pill">À venir</span></div>
+      <button class="btn outline full" style="margin-top:10px" onclick="addEvaluation()">＋ Ajouter une évaluation fictive</button>
+    </div>
+    ${section("Banque d'épreuves")}
+    <div class="card">
+      ${["BEPC blanc · Mathématiques","BEPC blanc · Français","Probatoire · Sciences"].map((x,i)=>`<div class="list-row"><div class="list-icon">📄</div><div class="list-main"><strong>${x}</strong><small>Épreuve fictive · ${i===2?"Première":"Troisième"}</small></div><button class="btn secondary small-btn" onclick="openResource('${x}')">Voir</button></div>`).join("")}
+    </div>
+    <div class="card teal">
+      <h3>⏱ Examen blanc</h3>
+      <p class="small">Conditions d'examen : chronomètre activé, aucune aide de l'IA pendant l'épreuve.</p>
+      <button class="btn primary full" onclick="startExam()">Lancer un examen blanc →</button>
+    </div>
+    ${section("Mon plan de révision")}
+    <div class="card">
+      ${[
+        ["Lun","Maths · 25 min","done"],
+        ["Mar","Français · 20 min","done"],
+        ["Mer","Pythagore · 30 min","today"],
+        ["Jeu","Exercices · 25 min",""],
+        ["Ven","Mini-test · 20 min",""]
+      ].map(x=>`<div class="list-row"><div class="list-icon">${x[2]==="done"?"✓":"📅"}</div><div class="list-main"><strong>${x[0]} — ${x[1]}</strong><small>${x[2]==="done"?"Séance terminée":x[2]==="today"?"À faire aujourd'hui":"Séance planifiée"}</small></div><span class="pill ${x[2]==="done"?"green":""}">${x[2]==="done"?"Fait":x[2]==="today"?"Aujourd'hui":"Prévu"}</span></div>`).join("")}
+    </div>`;
+}
+function selectPeriod(period) {
+  toast("Période sélectionnée : " + period + " (calendrier fictif).");
+}
+function addEvaluation() {
+  openModal("Ajouter une évaluation", `
+    <label class="field-label">Nom de l'évaluation</label><input id="evaluationName" placeholder="Ex. : DS de physique">
+    <label class="field-label">Date</label><input id="evaluationDate" type="date">
+    <label class="field-label">Matière</label><select id="evaluationSubject"><option>Mathématiques</option><option>Français</option><option>Physique</option><option>Informatique</option></select>
+  `, `<button class="btn primary full" onclick="saveEvaluation()">Enregistrer dans la maquette</button>`);
+}
+function saveEvaluation() {
+  const name = $("#evaluationName").value.trim();
+  if (!name) return toast("Ajoute le nom de l'évaluation.");
+  closeModal();
+  toast("Évaluation fictive ajoutée : " + name);
+}
+function startExam() {
+  if (state.examRunning) return toast("Un examen blanc est déjà en cours.");
+  state.examRunning = true;
+  state.examEnded = false;
+  state.examSubmitted = false;
+  state.examAnswers = {};
+  state.examSeconds = state.examDuration;
+  state.examDeadline = Date.now() + state.examDuration*1000;
+  renderExamModal();
+  if (examInterval) clearInterval(examInterval);
+  examInterval = setInterval(() => {
+    state.examSeconds = Math.max(0,Math.ceil((state.examDeadline-Date.now())/1000));
+    const clock = $("#examClock");
+    if (clock) clock.textContent = formatTime(state.examSeconds);
+    if (state.examSeconds <= 0) {
+      clearInterval(examInterval);
+      examInterval = null;
+      state.examRunning = false;
+      state.examEnded = true;
+      finishExam(true);
+    }
+  },250);
+}
+function renderExamModal() {
+  openModal("Examen blanc · Mathématiques", `
+    <div class="card soft"><div class="row between"><span class="small muted">Temps restant</span><span class="timer" id="examClock">${formatTime(state.examSeconds)}</span></div></div>
+    <div class="pill orange">Mode examen · Aucune aide de l'IA</div>
+    <p class="small muted" style="margin-top:9px">Réponds aux questions avant la fin du chronomètre.</p>
+    <div class="exam-question"><strong>1. Un triangle rectangle a des côtés de 3 cm et 4 cm. Quelle est son hypoténuse ?</strong>${["4 cm","5 cm","7 cm"].map((a,i)=>`<label><input type="radio" name="q1" value="${i}" ${state.examAnswers.q1===String(i)?"checked":""} onchange="state.examAnswers.q1=this.value"> ${a}</label>`).join("")}</div>
+    <div class="exam-question"><strong>2. Combien vaut 3² + 4² ?</strong>${["12","25","49"].map((a,i)=>`<label><input type="radio" name="q2" value="${i}" ${state.examAnswers.q2===String(i)?"checked":""} onchange="state.examAnswers.q2=this.value"> ${a}</label>`).join("")}</div>
+    <p class="mini-note">Les réponses ne sont pas envoyées à un serveur.</p>
+  `, `<button class="btn primary full" onclick="finishExam(false)">Terminer et corriger</button>`);
+}
+function updateExamDisplay() {
+  const clock = $("#examClock");
+  if (clock) clock.textContent = formatTime(state.examSeconds);
+}
+function finishExam(timeUp) {
+  if (examInterval) clearInterval(examInterval);
+  examInterval = null;
+  state.examRunning = false;
+  state.examEnded = true;
+  const score = (state.examAnswers.q1==="1"?1:0) + (state.examAnswers.q2==="1"?1:0);
+  closeModal();
+  openModal(timeUp ? "Temps écoulé" : "Examen terminé", `
+    <div class="card teal"><div class="metric">${score}/2</div><p class="small">Résultat fictif de l'examen blanc.</p></div>
+    <p class="small">Question 1 : réponse attendue 5 cm.</p><p class="small">Question 2 : réponse attendue 25.</p>
+    <p class="small muted">Ce score est une démonstration, pas une note officielle.</p>
+  `, `<button class="btn primary full" onclick="closeModal();go('reports')">Voir mes bilans</button>`);
+}
+
+// ---------- Écran 6 : bilans ----------
+function renderReports() {
+  return `
+    <div class="eyebrow">Ton parcours de progression</div><h2>Mes bilans</h2>
+    <p class="muted small">Revois tes résultats, comprends tes erreurs et entraîne-toi à nouveau.</p>
+    <div class="grid2">
+      <div class="card"><div class="metric">13,5/20</div><div class="metric-label">Moyenne estimée</div><span class="pill orange" style="margin-top:8px">Indicative</span></div>
+      <div class="card"><div class="metric">8</div><div class="metric-label">Séances réalisées</div><span class="pill green" style="margin-top:8px">+2 cette semaine</span></div>
+    </div>
+    <div class="card">
+      <div class="row between"><div><h3>Bilan du 18 octobre</h3><p class="small muted">Mathématiques · 20 minutes</p></div><span class="pill green">15/20</span></div>
+      <div class="divider"></div><p class="small"><strong>Points réussis</strong></p><p class="small muted">Identification de l'hypoténuse et application de la formule.</p>
+      <p class="small"><strong>À retravailler</strong></p><p class="small muted">Calcul de racines carrées et rédaction des étapes de calcul.</p>
+      <button class="btn secondary full" onclick="downloadReport()">⬇ Télécharger le PDF (simulation)</button>
+    </div>
+    <div class="card">
+      <div class="row between"><div><h3>Bilan du 16 octobre</h3><p class="small muted">Français · 15 minutes</p></div><span class="pill orange">12/20</span></div>
+      <div class="divider"></div><p class="small muted">Points faibles : distinction entre métaphore et comparaison.</p>
+      <button class="btn secondary full" onclick="toast('Bilan fictif ouvert.')">Consulter le bilan</button>
+    </div>
+    <div class="card teal">
+      <h3>🔁 Reprendre les exercices ratés</h3>
+      <p class="small">Concentre-toi sur les notions qui méritent encore un peu de pratique.</p>
+      <button class="btn primary full" onclick="state.hintLevel=0;go('session')">Refaire les exercices ratés</button>
+    </div>
+    <div class="card">
+      <div class="row"><span class="avatar">👨‍👩‍👧</span><div style="flex:1"><h3>Copie envoyée au parent</h3><p class="small muted">Exemple de statut : bilan partagé le 18 octobre.</p></div><span class="pill green">Simulé</span></div>
+      <p class="mini-note">Aucun courriel ou message n'est envoyé depuis cette maquette.</p>
+    </div>
+    <div class="card soft">
+      <h3>Comment lire ce bilan ?</h3>
+      <p class="small muted">Les scores, dates et statistiques sont inventés pour la démonstration. Une version réelle devrait expliquer la méthode de calcul, la fiabilité et les limites des estimations.</p>
+    </div>`;
+}
+function downloadReport() {
+  const report = [
+    "RÉPÉTITEUR IA — BILAN FICTIF",
+    "Élève : " + state.studentName,
+    "Niveau : " + state.grade,
+    "Date : 18 octobre (exemple)",
+    "Matière : Mathématiques",
+    "Score fictif : 15/20",
+    "Points réussis : identification de l'hypoténuse.",
+    "À retravailler : racines carrées et rédaction.",
+    "",
+    "Ce document est une démonstration, pas un bilan scolaire officiel."
+  ].join("\n");
+  const blob = new Blob([report], {type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "bilan-fictif-repetiteur-ia.txt";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("Téléchargement du bilan de démonstration.");
+}
+
+// ---------- Écran 7 : forfaits et paiement ----------
+function getCustomPrice() {
+  const base = 300 * state.customHours * Math.max(1,state.customSubjects.length);
+  const discount = state.customHours >= 20 ? .30 : state.customHours >= 10 ? .20 : state.customHours >= 5 ? .10 : 0;
+  return Math.round(base * (1-discount));
+}
+function renderPlans() {
+  const plan = plans[state.selectedPlan];
+  const customPrice = getCustomPrice();
+  const paymentMethods = [
+    ["mtn","🟡","MTN Mobile Money"],
+    ["orange","🟠","Orange Money"],
+    ["card","💳","Carte bancaire"]
+  ];
+  return `
+    <div class="eyebrow">Accès et abonnements</div><h2>Choisis ton forfait</h2>
+    <p class="muted small">Des formules adaptées à ton rythme, en FCFA.</p>
+    <div class="card teal">
+      <div class="row"><span class="avatar">🎁</span><div><h3>Découverte gratuite</h3><p class="small">2 leçons gratuites + essai de 45 minutes, une seule fois.</p></div></div>
+      <span class="pill green">Offre de démonstration</span>
+      <button class="btn outline full" style="margin-top:10px" onclick="toast('Aucun essai réel : la maquette simule seulement cette offre.')">Activer mon essai fictif</button>
+    </div>
+    ${section("Les formules")}
+    <div class="stack">
+      ${Object.entries(plans).map(([key,p])=>`<button class="option ${state.selectedPlan===key?"selected":""}" style="width:100%;text-align:left" onclick="state.selectedPlan='${key}';render()"><input type="radio" ${state.selectedPlan===key?"checked":""} aria-label="${p.name}"><span style="flex:1"><strong>${p.name}</strong><small>${p.duration}</small></span><strong>${money(p.price)}</strong></button>`).join("")}
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="row between"><div><h3>${plan.name}</h3><p class="small muted">${plan.duration}</p></div><div class="metric" style="font-size:20px">${money(plan.price)}</div></div>
+      <button class="btn primary full" onclick="startPayment()">Choisir cette formule</button>
+    </div>
+    ${section("Forfait sur mesure")}
+    <div class="card">
+      <label class="field-label">Matières</label>
+      <div class="stack">
+        ${["Mathématiques","Français","Physique","Chimie","Anglais","Informatique"].map(s=>`<label class="option ${state.customSubjects.includes(s)?"selected":""}"><input type="checkbox" ${state.customSubjects.includes(s)?"checked":""} onchange="toggleSubject('${s}',this.checked)"><span><strong>${s}</strong><small>Inclure dans le forfait</small></span></label>`).join("")}
+      </div>
+      <label class="field-label">Nombre d'heures</label>
+      <div class="row between"><span class="small muted">Durée souhaitée</span><strong id="customHoursLabel">${state.customHours} h</strong></div>
+      <input type="range" min="1" max="30" value="${state.customHours}" style="width:100%;accent-color:var(--teal)" oninput="state.customHours=Number(this.value);$('#customHoursLabel').textContent=this.value+' h';$('#customPrice').textContent=money(getCustomPrice());$('#customDiscount').textContent=discountLabel()">
+      <div class="row between" style="margin-top:12px"><span class="small muted">Prix estimé</span><strong class="metric" id="customPrice" style="font-size:22px">${money(customPrice)}</strong></div>
+      <p class="small muted" id="customDiscount">${discountLabel()}</p>
+      <button class="btn outline full" onclick="startCustomPayment()">Choisir mon forfait sur mesure</button>
+    </div>
+    ${section("Mode de paiement")}
+    <div class="stack">
+      ${paymentMethods.map(([key,icon,label])=>`<button class="option ${state.selectedPayment===key?"selected":""}" onclick="state.selectedPayment='${key}';render()"><span class="avatar" style="font-size:20px">${icon}</span><span style="flex:1"><strong>${label}</strong><small>Paiement simulé uniquement</small></span><span>${state.selectedPayment===key?"●":"○"}</span></button>`).join("")}
+    </div>
+    <div class="card">
+      <label class="field-label">Code promo ou parrainage</label>
+      <div class="row"><input id="promoInput" value="${escapeHTML(state.promoCode)}" placeholder="Ex. : BIENVENUE"><button class="btn secondary" onclick="applyPromo()">Appliquer</button></div>
+      <label class="field-label">Code prépayé</label>
+      <div class="row"><input id="prepaidInput" value="${escapeHTML(state.prepaidCode)}" placeholder="Saisir le code"><button class="btn outline" onclick="applyPrepaid()">Valider</button></div>
+      <p class="mini-note">Codes de démonstration : PROMO10 et TEST2026.</p>
+    </div>
+    <div class="card soft">
+      <h3>Remboursement et annulation</h3>
+      <p class="small">Règle de maquette : demande de remboursement dans les 7 jours si aucune minute payante n'a été consommée. En cas de problème de paiement, conserver la référence et contacter l'assistance dans la version réelle. Les conditions définitives devront être validées avant lancement.</p>
+      ${toggleSwitch("Renouveler en 1 clic",state.renewal,"setRenewal","Confirmation requise avant tout paiement réel.")}
+      <p class="mini-note">Aucun renouvellement ni débit automatique réel n'est activé ici.</p>
+    </div>
+    ${state.age>=13&&state.age<=17&&!state.parentConfirmed?`<div class="card" style="border-color:#f0d7a9;background:#fff9ee"><span class="pill orange">Paiement bloqué</span><p class="small">La confirmation du parent est requise pour ce profil adolescent.</p><button class="btn outline full" onclick="go('onboarding')">Terminer la confirmation parent</button></div>`:""}`;
+}
+function discountLabel() {
+  const h=state.customHours;
+  const d=h>=20?30:h>=10?20:h>=5?10:0;
+  return d ? `Remise de démonstration : ${d}% (durée plus longue).` : "Prix indicatif sans remise supplémentaire.";
+}
+function toggleSubject(subject, checked) {
+  state.customSubjects = checked
+    ? [...new Set([...state.customSubjects,subject])]
+    : state.customSubjects.filter(s=>s!==subject);
+  render();
+}
+function setRenewal(value) {
+  state.renewal=value;
+  toast(value?"Renouvellement rapide activé (sans débit réel).":"Renouvellement rapide désactivé.");
+}
+function applyPromo() {
+  state.promoCode=$("#promoInput")?.value.trim()||"";
+  if (state.promoCode.toUpperCase()==="PROMO10") toast("Code fictif accepté : remise de 10% à titre de démonstration.");
+  else toast("Code non reconnu dans la maquette.");
+}
+function applyPrepaid() {
+  state.prepaidCode=$("#prepaidInput")?.value.trim()||"";
+  if (state.prepaidCode.toUpperCase()==="TEST2026") {
+    toast("Code fictif accepté.");
+    openModal("Code prépayé validé", `<div class="card teal"><h3>Accès de démonstration</h3><p class="small">Ce code ne crédite aucun compte réel.</p></div>`, `<button class="btn primary full" onclick="closeModal()">Continuer</button>`);
+  } else toast("Code prépayé fictif non reconnu.");
+}
+function startPayment() {
+  if (state.age>=13&&state.age<=17&&!state.parentConfirmed) {
+    toast("Paiement bloqué : confirmation parent requise.");
+    return;
+  }
+  showPaymentConfirmation(state.selectedPlan,plans[state.selectedPlan].price,plans[state.selectedPlan].duration);
+}
+function startCustomPayment() {
+  if (!state.customSubjects.length) return toast("Choisis au moins une matière.");
+  if (state.age>=13&&state.age<=17&&!state.parentConfirmed) return toast("Paiement bloqué : confirmation parent requise.");
+  showPaymentConfirmation("custom",getCustomPrice(),state.customHours+" heure(s) · "+state.customSubjects.join(", "));
+}
+function showPaymentConfirmation(key,price,duration) {
+  const method={mtn:"MTN Mobile Money",orange:"Orange Money",card:"Carte bancaire"}[state.selectedPayment];
+  openModal("Récapitulatif avant paiement", `
+    <div class="card soft"><div class="row between"><span class="small muted">Formule</span><strong>${escapeHTML(key==="custom"?"Sur mesure":plans[key].name)}</strong></div><div class="row between" style="margin-top:8px"><span class="small muted">Durée / contenu</span><strong style="text-align:right">${escapeHTML(duration)}</strong></div><div class="row between" style="margin-top:8px"><span class="small muted">Mode de paiement</span><strong>${method}</strong></div><div class="divider"></div><div class="row between"><strong>Total indicatif</strong><span class="metric">${money(price)}</span></div></div>
+    <p class="small">Avant de confirmer, vérifie les conditions de remboursement : remboursement possible dans les 7 jours si aucune minute payante n'a été consommée, selon la règle fictive de cette maquette.</p>
+    <p class="mini-note">Simulation uniquement : aucun paiement n'est effectué.</p>
+  `, `<button class="btn primary full" onclick="confirmPayment('${key}',${price},'${String(duration).replace(/'/g,"\\'")}')">Confirmer (simulation)</button>`);
+}
+function confirmPayment(key,price,duration) {
+  state.paymentConfirmed=true;
+  if(key!=="custom") state.selectedPlan=key;
+  remainingMinutes = key==="custom" ? state.customHours*60 : plans[key].minutes;
+  closeModal();
+  openModal("Confirmation fictive ✓", `
+    <div style="text-align:center;padding:12px"><div style="font-size:45px">🎉</div><h2>Tout est prêt !</h2><p class="muted small">Ceci est un reçu de démonstration.</p></div>
+    <div class="card teal"><div class="row between"><span class="small">Montant simulé</span><strong>${money(price)}</strong></div><div class="row between" style="margin-top:8px"><span class="small">Formule</span><strong>${escapeHTML(key==="custom"?"Sur mesure":plans[key].name)}</strong></div><div class="row between" style="margin-top:8px"><span class="small">Référence</span><strong>DEMO-2026-001</strong></div></div>
+    <p class="small muted">Aucun transfert d'argent réel n'a eu lieu.</p>
+  `, `<button class="btn primary full" onclick="closeModal();go('home')">Retour à l'accueil</button>`);
+}
+
+// ---------- Écran 8 : espace parent ----------
+function renderParent() {
+  const childMode = state.view==="student";
+  return `
+    <div class="row between"><div><div class="eyebrow">Espace famille</div><h2>Suivi de ${escapeHTML(state.studentName)}</h2></div><span class="avatar">👨‍👩‍👧</span></div>
+    <div class="card teal">
+      <div class="row between"><div><h3>Vue ${childMode?"élève":"parent"}</h3><p class="small">Bascule pour découvrir les deux interfaces.</p></div><span class="pill">${childMode?"Élève":"Parent"}</span></div>
+      <div class="grid2" style="margin-top:10px">
+        <button class="btn ${childMode?"primary":"secondary"}" onclick="setView('student')">👧 Vue élève</button>
+        <button class="btn ${!childMode?"primary":"secondary"}" onclick="setView('parent')">👨 Vue parent</button>
+      </div>
+    </div>
+    ${childMode ? `
+      <div class="card dark"><h3>Bonjour ${escapeHTML(state.studentName)} !</h3><p style="font-size:12px;color:#e3eaf4">Tu peux suivre tes progrès et choisir ta prochaine séance.</p><button class="btn white full" onclick="go('session')">Reprendre ma séance</button></div>
+      ${cardLink("📚","Mes matières","Mathématiques, Français et Sciences","search")}
+      ${cardLink("📊","Mes bilans","Scores et points à retravailler","reports")}
+      ${cardLink("🎁","Mon forfait","Temps d'étude restant","plans")}
+    ` : `
+      <div class="grid2">
+        <div class="card"><div class="metric">4 h 25</div><div class="metric-label">Temps d'étude cette semaine</div></div>
+        <div class="card"><div class="metric">13,5/20</div><div class="metric-label">Moyenne estimée</div></div>
+      </div>
+      <div class="card">
+        <h3>Progression par matière</h3>
+        ${[["Mathématiques",72],["Français",61],["Sciences",48]].map(([name,p])=>`<div style="margin:12px 0"><div class="row between"><span class="small">${name}</span><strong class="small">${p}%</strong></div><div class="progress" style="margin-top:5px"><span style="width:${p}%"></span></div></div>`).join("")}
+        <p class="mini-note">Indicateurs de démonstration, pas des mesures officielles.</p>
+      </div>
+      <div class="card"><h3>Points faibles à surveiller</h3><p class="small">• Mathématiques : racines carrées.</p><p class="small">• Français : figures de style.</p><button class="btn outline full" onclick="go('reports')">Consulter les bilans</button></div>
+      <div class="card"><div class="row between"><div><h3>Forfait restant</h3><p class="small muted">Temps disponible</p></div><strong class="metric" style="font-size:19px">${Math.floor(remainingMinutes/60)} h ${remainingMinutes%60} min</strong></div><button class="btn secondary full" onclick="go('plans')">Gérer les achats</button></div>
+      ${section("Contrôles parentaux")}
+      <div class="card">
+        <label class="field-label">Limite de temps par jour : <strong id="dailyLimitLabel">${state.dailyLimit} min</strong></label>
+        <input type="range" min="30" max="240" step="15" value="${state.dailyLimit}" style="width:100%;accent-color:var(--teal)" oninput="state.dailyLimit=Number(this.value);$('#dailyLimitLabel').textContent=this.value+' min'">
+        ${toggleSwitch("Horaires interdits",""+state.blockedHours==="true","setBlockedHours","Ex. : 21 h – 7 h")}
+        <label class="field-label">Nombre maximal d'appareils</label>
+        <select onchange="state.deviceLimit=Number(this.value);toast('Limite d’appareils mise à jour.')">${[1,2,3,4].map(n=>`<option value="${n}" ${state.deviceLimit===n?"selected":""}>${n} appareil(s)</option>`).join("")}</select>
+        ${toggleSwitch("Autoriser les achats après validation",state.purchaseApproval,"setPurchaseApproval","Le parent valide les achats du compte.")}
+      </div>
+      <div class="card">
+        <h3>Accès aux conversations</h3>
+        <div class="row between"><div><strong class="small">9–12 ans</strong><p class="mini-note">Accès complet du parent</p></div><span class="pill green">Complet</span></div>
+        <div class="divider"></div>
+        <div class="row between"><div><strong class="small">13–17 ans</strong><p class="mini-note">Résumé seulement, selon les paramètres de protection</p></div><span class="pill teal">Résumé</span></div>
+        <p class="mini-note">Les alertes de sécurité doivent protéger l'adolescent tout en respectant sa vie privée.</p>
+      </div>
+      <div class="card">
+        <h3>Alertes parentales</h3>
+        <div class="list-row"><span class="list-icon">⏳</span><div class="list-main"><strong>Fin de forfait</strong><small>Rappel avant épuisement</small></div><span class="pill orange">Activable</span></div>
+        <div class="list-row"><span class="list-icon">📱</span><div class="list-main"><strong>Nouvel appareil</strong><small>Connexion inhabituelle</small></div><span class="pill">Sécurité</span></div>
+        <div class="list-row"><span class="list-icon">💙</span><div class="list-main"><strong>Alerte de détresse niveau 2</strong><small>Signal minimal, sans détails privés de conversation</small></div><span class="pill red">Prioritaire</span></div>
+      </div>
+      <div class="card">
+        <h3>Rôles du compte</h3>
+        ${toggleSwitch("Parent payeur",state.payerRole,"setPayerRole","Peut gérer les paiements fictifs.")}
+        ${toggleSwitch("Parent suiveur",state.followRole,"setFollowRole","Peut consulter les bilans autorisés.")}
+      </div>
+      <div class="card soft"><h3>🔐 Confidentialité</h3><p class="small muted">Les contrôles présentés sont illustratifs. Dans une vraie application, les permissions, les alertes de détresse et l'accès aux conversations doivent être définis de manière transparente, sécurisée et adaptée à l'âge.</p></div>
+    `}
+  `;
+}
+function setView(view) {
+  state.view=view;
+  render();
+}
+function setBlockedHours(value) { state.blockedHours=value; }
+function setPurchaseApproval(value) { state.purchaseApproval=value; toast(value?"Validation parent requise pour les achats.":"Validation parent désactivée dans la maquette."); }
+function setPayerRole(value) { state.payerRole=value; toast("Rôle payeur "+(value?"activé":"désactivé")+"."); }
+function setFollowRole(value) { state.followRole=value; toast("Rôle suiveur "+(value?"activé":"désactivé")+"."); }
+
+// ---------- Écran 9 : profil, hors-ligne et notifications ----------
+function renderProfile() {
+  return `
+    <div class="row top">
+      <div class="avatar" style="width:60px;height:60px;font-size:30px">👧🏽</div>
+      <div style="flex:1"><div class="eyebrow">Mon compte</div><h2>${escapeHTML(state.studentName)}</h2><p class="small muted">${state.age} ans · ${escapeHTML(state.grade)} · ${escapeHTML(state.series)}</p><span class="pill green">● Profil fictif</span></div>
+      <button class="icon-btn" onclick="go('onboarding')" aria-label="Modifier le profil">✎</button>
+    </div>
+    ${section("Mes informations")}
+    <div class="card">
+      <label class="field-label">Pays</label>
+      <select onchange="state.country=this.value;toast('Pays mis à jour.')">${["Cameroun","Côte d'Ivoire","Sénégal","Bénin","Togo","Gabon","Congo","Tchad","Autre"].map(c=>`<option ${state.country===c?"selected":""}>${c}</option>`).join("")}</select>
+      <label class="field-label">Classe</label>
+      <select onchange="state.grade=this.value;toast('Classe mise à jour.')">${["6ème","5ème","4ème","3ème","2nde","1ère","Terminale","Université L1","Université L2","Université L3","Master"].map(g=>`<option ${state.grade===g?"selected":""}>${g}</option>`).join("")}</select>
+      <label class="field-label">Langue d'interface</label>
+      <select onchange="toast('Langue sélectionnée : '+this.value+' (traduction de maquette non activée).')"><option>Français</option><option>English</option></select>
+      ${toggleSwitch("Mode économie de données",state.economyMode,"setEconomyMode","Réduit les téléchargements et les médias.")}
+    </div>
+    <div class="card">
+      <div class="row between"><div><h3>Connexion</h3><p class="small muted">État du réseau simulé</p></div><span class="pill green" id="connectionBadge">● Connecté</span></div>
+      <div class="row between" style="margin-top:8px"><span class="small">Contenus disponibles hors-ligne</span><strong>${state.downloads.length}</strong></div>
+      <div class="progress" style="margin-top:8px"><span style="width:${Math.min(100,state.downloads.length*25)}%"></span></div>
+      <p class="small muted" style="margin-top:10px">Reconnecte-toi dans 24 h pour garder ton accès hors-ligne.</p>
+      <div class="btn-group"><button class="btn secondary" onclick="toggleConnection()">Simuler la connexion</button><button class="btn outline" onclick="toast('Synchronisation fictive terminée.')">Synchroniser</button></div>
+    </div>
+    ${section("Mes contenus téléchargés")}
+    <div class="card">
+      ${state.downloads.length ? state.downloads.map((name,i)=>`<div class="list-row"><span class="list-icon">📘</span><div class="list-main"><strong>${escapeHTML(name)}</strong><small>Disponible hors-ligne · ${state.economyMode?"version légère":"qualité standard"}</small></div><button class="btn danger small-btn" onclick="deleteDownload(${i})">Supprimer</button></div>`).join("") : `<div class="empty-state">Aucun contenu téléchargé.</div>`}
+      <button class="btn primary full" style="margin-top:10px" onclick="downloadContent()">＋ Télécharger un contenu</button>
+    </div>
+    ${section("Centre de notifications")}
+    <div class="card">
+      ${toggleSwitch("Activer les notifications",state.notifications,"setNotifications","Rappels d'étude et alertes de forfait.")}
+      <div class="divider"></div>
+      <div class="list-row"><span class="list-icon">⏳</span><div class="list-main"><strong>Forfait bientôt terminé</strong><small>Premier rappel : 3 jours avant l'échéance</small></div><span class="pill orange">J−3</span></div>
+      <div class="list-row"><span class="list-icon">🔔</span><div class="list-main"><strong>Rappel de forfait</strong><small>Deuxième rappel : 1 jour avant l'échéance</small></div><span class="pill orange">J−1</span></div>
+      <div class="list-row"><span class="list-icon">📚</span><div class="list-main"><strong>Petit rappel d'étude</strong><small>Il est temps de faire ta séance de 20 minutes.</small></div><span class="pill teal">Étudier</span></div>
+      <div class="list-row"><span class="list-icon">📐</span><div class="list-main"><strong>DS de maths dans 3 jours</strong><small>Pense à réviser Pythagore.</small></div><span class="pill">Agenda</span></div>
+    </div>
+    ${section("Autres espaces")}
+    <div class="stack">
+      ${cardLink("📊","Bilans de progression","Résultats et exercices ratés","reports")}
+      ${cardLink("💳","Forfaits et paiement","Consulter les formules","plans")}
+      ${cardLink("👨‍👩‍👧","Espace parent","Contrôles et suivi familial","parent")}
+      ${cardLink("🔐","Changer de profil","Téléphone partagé et PIN","onboarding")}
+    </div>
+    <p class="footer-note">Version de démonstration · Aucun compte réel.</p>`;
+}
+function setEconomyMode(value) {
+  state.economyMode=value;
+  render();
+  toast(value?"Mode économie de données activé.":"Mode économie de données désactivé.");
+}
+function setNotifications(value) {
+  state.notifications=value;
+  toast(value?"Notifications fictives activées.":"Notifications fictives désactivées.");
+}
+function toggleConnection() {
+  const badge=$("#connectionBadge");
+  if (!badge) return;
+  const connected=badge.textContent.includes("Connecté");
+  badge.textContent=connected?"○ Hors-ligne":"● Connecté";
+  badge.className="pill "+(connected?"orange":"green");
+  toast(connected?"Mode hors-ligne simulé.":"Connexion rétablie (simulation).");
+}
+function downloadContent() {
+  const choices=["Mathématiques · Pythagore","Français · Les figures de style","Sciences · Électricité","Anglais · Vocabulaire"];
+  openModal("Télécharger un contenu", `
+    <p class="small muted">Sélectionne un cours fictif à rendre disponible hors-ligne.</p>
+    <div class="stack">${choices.map((name,i)=>`<label class="option"><input type="radio" name="downloadChoice" value="${escapeHTML(name)}" ${i===0?"checked":""}><span><strong>${escapeHTML(name)}</strong><small>Version ${state.economyMode?"légère":"standard"}</small></span></label>`).join("")}</div>
+  `, `<button class="btn primary full" onclick="confirmDownload()">Télécharger</button>`);
+}
+function confirmDownload() {
+  const selected=$('input[name="downloadChoice"]:checked')?.value;
+  if (!selected) return toast("Sélectionne un contenu.");
+  if (!state.downloads.includes(selected)) state.downloads.push(selected);
+  closeModal(); render();
+  toast("Contenu ajouté aux téléchargements fictifs.");
+}
+function deleteDownload(index) {
+  const name=state.downloads[index];
+  state.downloads.splice(index,1);
+  render();
+  toast("Contenu supprimé : "+name);
+}
+
+// ---------- Navigation générale ----------
+$("#presentationTabs").addEventListener("click",event=>{
+  const button=event.target.closest("[data-presentation]");
+  if(button) go(button.dataset.presentation);
+});
+$$(".nav-item").forEach(button=>button.addEventListener("click",()=>go(button.dataset.screen)));
+$("#headerNotification").addEventListener("click",()=>go("profile"));
+
+// ---------- Initialisation ----------
+function updateClock() {
+  const now=new Date();
+  $("#statusTime").textContent=now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+}
+updateClock();
+setInterval(updateClock,30000);
+ensureSessionClock();
+render();
+</script>
+</body>
+</html>
