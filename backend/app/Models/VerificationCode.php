@@ -24,6 +24,7 @@ class VerificationCode extends Model
         'max_attempts',
         'expires_at',
         'consumed_at',
+              'created_at',
     ];
 
     protected function casts(): array

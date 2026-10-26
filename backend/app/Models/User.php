@@ -24,9 +24,12 @@ class User extends Authenticatable
         'locale',
         'status',
         'last_login_at',
+        'pin_hash',
+        'pin_failed_attempts',
+        'pin_locked_until',
     ];
 
-    protected $hidden = ['password'];
+    protected $hidden = ['password', 'pin_hash'];
 
     protected function casts(): array
     {
@@ -35,6 +38,8 @@ class User extends Authenticatable
             'phone_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'pin_hash' => 'hashed',
+            'pin_locked_until' => 'datetime',
         ];
     }
 
