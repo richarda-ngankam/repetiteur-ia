@@ -99,7 +99,7 @@ class ParentAuthController extends Controller
 
             return [
                 'user' => $user,
-                'token' => $user->createToken('appareil-' . $device->id, ['parent'])->plainTextToken,
+                ...$this->emettreJetons($user, $device),
             ];
         });
 
@@ -107,6 +107,7 @@ class ParentAuthController extends Controller
             'user_id' => $resultat['user']->id,
             'name' => $resultat['user']->name,
             'token' => $resultat['token'],
+            'device_token' => $resultat['device_token'],
         ], 201);
     }
 
@@ -135,18 +136,18 @@ class ParentAuthController extends Controller
             return response()->json(['message' => 'Ce compte est suspendu.'], 403);
         }
 
-        $token = DB::transaction(function () use ($user, $data) {
+                $jetons = DB::transaction(function () use ($user, $data) {
             $device = $this->enregistrerAppareil($user, $data['device']);
 
             $user->forceFill(['last_login_at' => now()])->save();
 
-            return $user->createToken('appareil-' . $device->id, [$user->type === 'parent' ? 'parent' : 'student'])->plainTextToken;
+                       return $this->emettreJetons($user, $device);
         });
 
         return response()->json([
             'user_id' => $user->id,
             'name' => $user->name,
-            'token' => $token,
+            ...$jetons,
         ]);
     }
 
@@ -169,6 +170,18 @@ class ParentAuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Déconnecté.']);
+    }
+
+       // Un jeton « parent » (espace parent) et un jeton « appareil » (liste des profils et PIN seulement).
+    // Une nouvelle connexion depuis le même appareil remplace les anciens jetons.
+    private function emettreJetons(User $user, Device $device): array
+    {
+        $user->tokens()->whereIn('name', ['parent:' . $device->id, 'device:' . $device->id])->delete();
+
+        return [
+            'token' => $user->createToken('parent:' . $device->id, [$user->type === 'parent' ? 'parent' : 'student'])->plainTextToken,
+            'device_token' => $user->createToken('device:' . $device->id, ['device'])->plainTextToken,
+        ];
     }
 
     private function compteVerifie(string $channel, string $destination): ?User
