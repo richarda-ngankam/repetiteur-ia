@@ -29,6 +29,7 @@ class CountrySeeder extends Seeder
             'currency' => $p[3],
             'default_locale' => 'fr',
             'timezone' => $p[4],
+            'is_open' => $p[0] === 'CM',
             'created_at' => now(),
             'updated_at' => now(),
         ], $pays);
