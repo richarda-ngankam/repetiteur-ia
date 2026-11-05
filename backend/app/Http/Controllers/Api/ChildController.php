@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -19,6 +20,7 @@ class ChildController extends Controller
 
     private const AGE_MIN = 9;
     private const AGE_ADULTE = 18;
+    private const VERSION_CONSENTEMENT = '1.0';
 
     // Liste des enfants du parent connecté.
     public function index(Request $request): JsonResponse
@@ -37,6 +39,7 @@ class ChildController extends Controller
     }
 
     // Création d'un enfant (9 à 17 ans) par un parent connecté : le parent est responsable confirmé.
+    // Le consentement parental est obligatoire et enregistré dans la table consents.
     public function store(Request $request): JsonResponse
     {
         $parent = $this->parentConnecte($request);
@@ -50,6 +53,10 @@ class ChildController extends Controller
             'track_code' => ['nullable', 'string', 'max:30'],
             'pin' => ['required', 'digits:4'],
             'role' => ['required', Rule::in(['payer', 'follower'])],
+            'parental_consent' => ['required', 'accepted'],
+        ], [
+            'parental_consent.required' => 'Le consentement parental est obligatoire.',
+            'parental_consent.accepted' => 'Le consentement parental est obligatoire.',
         ]);
 
         $age = Carbon::parse($data['birth_date'])->age;
@@ -62,7 +69,7 @@ class ChildController extends Controller
             throw ValidationException::withMessages(['birth_date' => ['À partir de ' . self::AGE_ADULTE . ' ans, la personne crée son propre compte.']]);
         }
 
-        $tutelle = DB::transaction(function () use ($data, $parent) {
+        $tutelle = DB::transaction(function () use ($data, $parent, $request) {
             // L'enfant n'a pas de compte (user_id vide) : il ouvre son profil avec le PIN sur un appareil autorisé.
             $profile = Profile::create([
                 'user_id' => null,
@@ -83,6 +90,20 @@ class ChildController extends Controller
                 'role' => $data['role'],
                 'status' => 'confirmed',
                 'confirmed_at' => now(),
+            ]);
+
+            // Preuve du consentement parental (empreinte de l'IP, jamais l'adresse).
+            DB::table('consents')->insert([
+                'id' => (string) Str::uuid(),
+                'user_id' => $parent->id,
+                'profile_id' => $profile->id,
+                'type' => 'parental',
+                'document_version' => self::VERSION_CONSENTEMENT,
+                'country_code' => $data['country_code'],
+                'granted_at' => now(),
+                'ip_hash' => hash('sha256', (string) $request->ip()),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
             $tutelle->setRelation('profile', $profile);

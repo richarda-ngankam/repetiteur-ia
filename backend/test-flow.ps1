@@ -62,7 +62,7 @@ $tm = $marie.token
 Voir 'Moi (attendu : Marie Ngono)' (Appel GET 'me' $null $tm)
 
 # 2. Creation d'une enfant de 15 ans
-$corpsEnfant = @{ first_name = 'Aicha'; birth_date = '2011-03-14'; country_code = 'CM'; system_code = 'fr'; level_code = '3eme'; track_code = 'Generale'; pin = '1234'; role = 'payer' }
+$corpsEnfant = @{ first_name = 'Aicha'; birth_date = '2011-03-14'; country_code = 'CM'; system_code = 'fr'; level_code = '3eme'; track_code = 'Generale'; pin = '1234'; role = 'payer'; parental_consent = $true }
 $enfant = Appel POST 'children' $corpsEnfant $tm
 Voir 'Enfant creee (attendu : Aicha, age 15)' $enfant
 $idEnfant = $enfant.child.id
@@ -73,6 +73,9 @@ $trop = $corpsEnfant.Clone(); $trop.birth_date = '2020-01-01'
 Voir 'Test : enfant trop jeune (doit etre refuse)' (Appel POST 'children' $trop $tm)
 $adulte = $corpsEnfant.Clone(); $adulte.birth_date = '2000-01-01'
 Voir 'Test : adulte (doit etre refuse)' (Appel POST 'children' $adulte $tm)
+
+$sansConsent = $corpsEnfant.Clone(); $sansConsent.parental_consent = $false
+Voir 'Test : sans consentement parental (doit etre refuse)' (Appel POST 'children' $sansConsent $tm)
 
 # 4. Invitation de Paul
 $corps = @{ channel = 'sms'; destination = '+237611111111'; name = 'Paul Ngono'; role = 'follower' }
