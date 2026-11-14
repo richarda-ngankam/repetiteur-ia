@@ -93,7 +93,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     });
     try {
       final repository = ref.read(authRepositoryProvider);
-      final token = _mode == _Mode.login
+      final session = _mode == _Mode.login
           ? await repository.login(destination: _destination, code: _code.text)
           : await repository.register(
         destination: _destination,
@@ -101,7 +101,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         name: _name.text.trim(),
       );
       // Le routeur redirige automatiquement vers l'accueil.
-      await ref.read(authControllerProvider.notifier).setSession(token);
+      await ref.read(authControllerProvider.notifier).setSession(session);
     } on ApiException catch (e) {
       _fail(e.status == 409
           ? 'Ce numéro a déjà un compte. Utilise « Se connecter ».'

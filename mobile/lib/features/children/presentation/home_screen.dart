@@ -14,16 +14,11 @@ class HomeScreen extends ConsumerWidget {
     final name = ref.watch(meNameProvider);
     final children = ref.watch(childrenProvider);
 
-    // Session expirée côté serveur : retour à l'écran de connexion.
-    for (final state in [name, children]) {
-      final error = state.error;
-      if (error is ApiException && error.status == 401) {
-        Future.microtask(() => ref.read(authControllerProvider.notifier).expire());
-      }
-    }
-
     final firstName = name.maybeWhen(
-      data: (n) => n.split(' ').first,
+      data: (n) {
+        final trimmed = n.trim();
+        return trimmed.isEmpty ? 'Parent' : trimmed.split(' ').first;
+      },
       orElse: () => '…',
     );
 

@@ -1,3 +1,5 @@
+import 'dart:ui' show VoidCallback;
+
 import 'package:dio/dio.dart';
 
 import '../config/app_config.dart';
@@ -5,24 +7,35 @@ import '../storage/session_storage.dart';
 import 'api_exception.dart';
 
 class ApiClient {
-  ApiClient(this._storage)
-      : _dio = Dio(BaseOptions(
-    baseUrl: AppConfig.apiBaseUrl,
-    connectTimeout: const Duration(seconds: 15),
-    receiveTimeout: const Duration(seconds: 20),
-    headers: {'Accept': 'application/json'},
-  )) {
+  ApiClient(
+    this._storage, {
+    this.onUnauthorized,
+    Dio? dio,
+  }) : _dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: AppConfig.apiBaseUrl,
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 20),
+              headers: {'Accept': 'application/json'},
+            )) {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await _storage.readToken();
         if (token != null) options.headers['Authorization'] = 'Bearer $token';
         handler.next(options);
       },
+      onError: (e, handler) {
+        if (e.response?.statusCode == 401) {
+          onUnauthorized?.call();
+        }
+        handler.next(e);
+      },
     ));
   }
 
   final Dio _dio;
   final SessionStorage _storage;
+  final VoidCallback? onUnauthorized;
 
   // Les chemins commencent par « / » : /auth/code, /children, etc.
   Future<Map<String, dynamic>> request(

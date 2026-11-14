@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/providers.dart';
 import '../../../core/storage/session_storage.dart';
+import '../domain/session.dart';
 
 class AuthRepository {
   AuthRepository(this._api, this._storage);
@@ -26,17 +27,20 @@ class AuthRepository {
     });
   }
 
-  Future<String> login({required String destination, required String code}) async {
+  Future<Session> login({required String destination, required String code}) async {
     final response = await _api.request('POST', '/auth/login', data: {
       'channel': 'sms',
       'destination': destination,
       'code': code,
       'device': await _device(),
     });
-    return response['token'] as String;
+    return Session(
+      token: response['token'] as String,
+      deviceToken: (response['device_token'] as String?) ?? '',
+    );
   }
 
-  Future<String> register({
+  Future<Session> register({
     required String destination,
     required String code,
     required String name,
@@ -51,7 +55,10 @@ class AuthRepository {
       'accept_privacy': true,
       'device': await _device(),
     });
-    return response['token'] as String;
+    return Session(
+      token: response['token'] as String,
+      deviceToken: (response['device_token'] as String?) ?? '',
+    );
   }
 
   Future<String> meName() async {
