@@ -15,7 +15,7 @@ Route::get('/user', function (Request $request) {
     $controles = \App\Http\Controllers\Api\ParentalControlController::class;
     $pins = \App\Http\Controllers\Api\PinController::class;
 
-    \Illuminate\Support\Facades\Route::post('auth/code', [$auth, 'demanderCode'])->middleware('throttle:5,1');
+    \Illuminate\Support\Facades\Route::post('auth/code', [$auth, 'demanderCode'])->middleware('throttle:sms-code');
     \Illuminate\Support\Facades\Route::post('auth/register', [$auth, 'inscrire'])->middleware('throttle:10,1');
     \Illuminate\Support\Facades\Route::post('auth/login', [$auth, 'connecter'])->middleware('throttle:10,1');
 

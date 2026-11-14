@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\Concerns\ParentApiHelpers;
 use App\Http\Controllers\Controller;
+use App\Models\Consent;
 use App\Models\Guardianship;
 use App\Models\Profile;
 use Illuminate\Http\JsonResponse;
@@ -101,7 +102,7 @@ class ChildController extends Controller
                 'document_version' => self::VERSION_CONSENTEMENT,
                 'country_code' => $data['country_code'],
                 'granted_at' => now(),
-                'ip_hash' => hash('sha256', (string) $request->ip()),
+                'ip_hash' => Consent::hacherIp((string) $request->ip()),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
